@@ -30,3 +30,18 @@
 - `reservations` est une collection de premier niveau et non une sous-ressource d'`adherents`, car une réservation se consulte aussi côté créneau (`creneaux/{id}/reservations` en filtre).
 - Annuler une réservation = `PATCH /reservations/{id}` (passe `statut` à `annulee`), plutôt qu'un `DELETE` (l'historique disparaîtrait) ou un `POST /reservations/{id}/annuler` (verbe dans l'URI).
 - `creneaux` est une sous-ressource de `cours` car un créneau n'existe pas sans le cours qui le génère (règle de récurrence), mais reste accessible en `GET /creneaux/{id}` pour les réservations et listes d'attente.
+
+## Modèle de données (esquisse)
+
+- `adherents` (id, nom, email) — 1
+- `abonnements` (id, adherent_id, formule, debut, fin, quota_hebdo) — N-1 vers `adherents`
+- `coachs` (id, nom, email) — 1
+- `cours` (id, type, coach_id, capacite, jour_semaine, heure_debut, duree_min, periode_debut, periode_fin, fuseau) — N-1 vers `coachs`
+- `creneaux` (id, cours_id, debut, fin, places_prises) — N-1 vers `cours` (occurrence générée par la règle de récurrence du cours)
+- `reservations` (id, creneau_id, adherent_id, statut, cree_le) — N-1 vers `creneaux`, N-1 vers `adherents` (table de liaison, mais reste une ressource car elle porte un état/historique)
+- `listes_attente` (id, creneau_id, adherent_id, rang, cree_le) — N-1 vers `creneaux`, N-1 vers `adherents`
+
+Stocké vs calculé :
+- `places_prises` est stocké (compteur mis à jour à chaque réservation/annulation).
+- "places restantes" n'a pas de colonne : `capacite - places_prises`, calculé à la lecture.
+- "complet" (booléen) n'est pas stocké : calculé (`places_prises >= capacite`).
