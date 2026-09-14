@@ -8,8 +8,6 @@ Langage : Python   /   Framework HTTP : FastAPI   /   Client HTTP : curl
 
 ## Lancer le projet
 
-Rien ne tourne encore (le code arrive en séance 2) — voici comment préparer l'environnement et la base de données.
-
 1. Installer Python 3.12+.
 2. Créer et activer un environnement virtuel :
    ```bash
@@ -21,8 +19,7 @@ Rien ne tourne encore (le code arrive en séance 2) — voici comment préparer 
    ```bash
    pip install fastapi uvicorn
    ```
-4. Régénérer la base `gym.db` à partir des fichiers fournis (`schema.sql` + `seed.sql`) :
+4. Lancer l'API (utilise `gym.db`, déjà présente à la racine) :
    ```bash
-   python -c "import sqlite3, pathlib; conn = sqlite3.connect('gym.db'); conn.executescript(pathlib.Path('schema.sql').read_text()); conn.executescript(pathlib.Path('seed.sql').read_text()); conn.commit()"
+   uvicorn src.main:app --reload
    ```
-   (le module `sqlite3` fait partie de la bibliothèque standard de Python, rien d'autre à installer)
