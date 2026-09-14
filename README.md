@@ -4,7 +4,7 @@
 Sujet n° 3 - Salle de sport
 
 ## Stack
-Langage : Python   /   Framework HTTP : Flask   /   Client HTTP : curl
+Langage : Python   /   Framework HTTP : FastAPI   /   Client HTTP : curl
 
 ## Lancer le projet
 
@@ -17,9 +17,9 @@ Rien ne tourne encore (le code arrive en séance 2) — voici comment préparer 
    .venv\Scripts\activate      # Windows
    source .venv/bin/activate   # Linux/Mac
    ```
-3. Installer Flask :
+3. Installer FastAPI et Uvicorn (serveur ASGI) :
    ```bash
-   pip install flask
+   pip install fastapi uvicorn
    ```
 4. Régénérer la base `gym.db` à partir des fichiers fournis (`schema.sql` + `seed.sql`) :
    ```bash
