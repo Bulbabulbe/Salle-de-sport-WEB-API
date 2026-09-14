@@ -4,7 +4,7 @@
 Sujet n° 3 - Salle de sport
 
 ## Stack
-Langage : Python   /   Framework HTTP : FastAPI   /   Client HTTP : curl
+Langage : Python   /   Framework HTTP : FastAPI   /   Client HTTP : Insomnia
 
 ## Lancer le projet
 
