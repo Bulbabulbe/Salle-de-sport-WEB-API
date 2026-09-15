@@ -45,3 +45,22 @@ Stocké vs calculé :
 - `places_prises` est stocké (compteur mis à jour à chaque réservation/annulation).
 - "places restantes" n'a pas de colonne : `capacite - places_prises`, calculé à la lecture.
 - "complet" (booléen) n'est pas stocké : calculé (`places_prises >= capacite`).
+
+## Stratégie face au piège de concurrence
+
+### Le piège
+Plannings récurrents (un cours génère ses créneaux sur plusieurs semaines) + fenêtre de réservation (un créneau ne se réserve que tant qu'il n'est pas passé et que le cours est dans sa période active) + quota par adhérent (limite hebdomadaire posée par son abonnement) + capacité limitée par créneau : plusieurs contraintes qui doivent toutes tenir en même temps, y compris quand deux requêtes arrivent au même instant sur la même ressource. Concrètement, deux requêtes concurrentes peuvent lire le même état (places restantes, quota déjà consommé) avant que l'une des deux n'écrive — sans protection, deux réservations peuvent toutes les deux "voir" une place libre et confirmer, dépassant la capacité, ou un même adhérent se retrouver avec deux réservations actives sur le même créneau.
+
+### Ce que fait l'API
+- Toute la logique de réservation (`POST /creneaux/{id}/reservations`) s'exécute dans **une transaction SQLite explicitement sérialisée** (`BEGIN IMMEDIATE`) : la première requête qui l'atteint verrouille l'écriture, la seconde attend qu'elle commit ou échoue avant de lire l'état à son tour — impossible que les deux lisent le même instantané "il reste une place".
+- Un même adhérent qui réserve deux fois le même créneau en parallèle → la deuxième requête trouve la première déjà en base → `409` (`deja-reserve`).
+- Quota hebdomadaire dépassé (compté sur la semaine du créneau visé, pas la semaine de la requête) → `409` (`quota-atteint`).
+- Créneau déjà complet au moment de la vérification → **pas d'erreur** : bascule automatique en `listes_attente` (rang suivant), réponse `201` avec `Location: /listes-attente/{id}` au lieu de `/reservations/{id}`.
+- `GET/PATCH/PUT /creneaux/{id}` supportent `ETag` + `If-None-Match` (lecture, `304`) + `If-Match` (écriture, `412` si l'ETag fourni ne correspond plus à l'état actuel) — protège contre l'écrasement d'une modification concurrente sur le créneau lui-même (ex: deux coachs qui éditent la capacité en même temps).
+- `GET /reservations` (historique) est paginé par **curseur** (`cree_le,id` décroissant) plutôt que par offset : un nouvel élément inséré pendant la pagination ne décale pas les positions des pages déjà lues, contrairement à l'offset où un insert peut faire apparaître un doublon ou sauter un élément entre deux pages.
+
+### Pourquoi REST ici
+`ETag`/`If-Match` réutilisent un mécanisme HTTP standard (cache conditionnel) plutôt qu'un verrou applicatif maison — outillage et sémantique déjà compris par tout client HTTP. Les codes de statut (`409`, `412`) portent le sens du conflit directement dans le protocole, sans avoir à documenter un format d'erreur métier séparé. Le curseur reste une simple query string, donc un lien cliquable/partageable, pas un état de session côté serveur.
+
+### Conséquences
+Le client doit savoir lire `kind` dans la réponse de réservation (`"reservation"` vs `"liste_attente"`) plutôt que de supposer qu'un `201` veut toujours dire "confirmé". Il doit aussi renvoyer l'`ETag` reçu en `If-Match` s'il veut éviter d'écraser une modification concurrente — s'il l'ignore, ses écritures passent toujours (pas de protection par défaut). Ce qu'on ne gère pas : annulation automatique en cas de non-présentation, promotion automatique du premier de la liste d'attente quand une place se libère (aucun code ne le fait aujourd'hui, resterait à ajouter).

@@ -1,0 +1,264 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-14T00:00:00.000Z",
+  "__export_source": "salle-de-sport-web-api",
+  "resources": [
+    {
+      "_id": "wrk_gym",
+      "_type": "workspace",
+      "name": "Salle de sport API",
+      "description": "Collection de requetes TP2"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_gym",
+      "name": "Base",
+      "data": { "base_url": "http://127.0.0.1:8000" }
+    },
+    {
+      "_id": "req_cours_create",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-create",
+      "method": "POST",
+      "url": "{{ _.base_url }}/cours",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"type\": \"Boxe\",\n  \"coach_id\": 1,\n  \"capacite\": 15,\n  \"jour_semaine\": 3,\n  \"heure_debut\": \"18:00\",\n  \"duree_min\": 60,\n  \"periode_debut\": \"2026-09-07\",\n  \"periode_fin\": \"2026-12-28\",\n  \"fuseau\": \"Europe/Paris\"\n}"
+      }
+    },
+    {
+      "_id": "req_cours_get",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-get",
+      "method": "GET",
+      "url": "{{ _.base_url }}/cours/1"
+    },
+    {
+      "_id": "req_cours_list",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-list",
+      "method": "GET",
+      "url": "{{ _.base_url }}/cours"
+    },
+    {
+      "_id": "req_cours_update",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-update",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/cours/1",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"capacite\": 22\n}"
+      }
+    },
+    {
+      "_id": "req_cours_delete",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-delete",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/cours/1",
+      "description": "Attention : supprime reellement la ligne id=1 du jeu de donnees seed."
+    },
+    {
+      "_id": "req_creneaux_create",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-create",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cours_id\": 1,\n  \"debut\": \"2026-10-19T05:00:00Z\",\n  \"fin\": \"2026-10-19T06:00:00Z\"\n}"
+      }
+    },
+    {
+      "_id": "req_creneaux_get",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-get",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux/1"
+    },
+    {
+      "_id": "req_creneaux_list",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-list",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux?page=1&limit=20"
+    },
+    {
+      "_id": "req_creneaux_list_filtered",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-list-filtered",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux?jour=2&tri=debut,id&ordre=asc&page=1&limit=10",
+      "description": "Collection navigable : pagination offset + filtre (cours/coach/jour) + tri stable."
+    },
+    {
+      "_id": "req_creneaux_update",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-update",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/creneaux/1",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"places_prises\": 15\n}"
+      }
+    },
+    {
+      "_id": "req_creneaux_delete",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneaux-delete",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/creneaux/1",
+      "description": "Attention : supprime reellement la ligne id=1 du jeu de donnees seed."
+    },
+    {
+      "_id": "req_cours_get_404",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-get-404",
+      "method": "GET",
+      "url": "{{ _.base_url }}/cours/999999",
+      "description": "TP3 J1 : ressource absente -> 404 en application/problem+json."
+    },
+    {
+      "_id": "req_cours_create_422_multi",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-create-422-multi-champs",
+      "method": "POST",
+      "url": "{{ _.base_url }}/cours",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"type\": \"Boxe\",\n  \"coach_id\": 1,\n  \"capacite\": -5,\n  \"jour_semaine\": 9,\n  \"heure_debut\": \"18:00\",\n  \"duree_min\": 60,\n  \"periode_debut\": \"2026-09-07\",\n  \"periode_fin\": \"2026-12-28\",\n  \"fuseau\": \"Europe/Paris\"\n}"
+      },
+      "description": "TP3 J2 : corps lisible mais invalide sur 2 champs a la fois -> 422 avec errors[] contenant capacite ET jour_semaine."
+    },
+    {
+      "_id": "req_cours_create_400_malformed",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-create-400-json-illisible",
+      "method": "POST",
+      "url": "{{ _.base_url }}/cours",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{ceci n'est pas du json valide"
+      },
+      "description": "TP3 J2 : corps illisible (JSON malforme) -> 400, a distinguer du 422 (corps lisible mais invalide)."
+    },
+    {
+      "_id": "req_cours_delete_409_fk",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "cours-delete-409-conflit",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/cours/1",
+      "description": "TP3 : suppression d'un cours ayant des creneaux lies -> 409 (conflit d'integrite), pas 500."
+    },
+    {
+      "_id": "req_reservation_create",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "reservation-create",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/2/reservations",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 6\n}"
+      },
+      "description": "TP4 : reponse {\"kind\": \"reservation\", ...} + Location: /reservations/{id} si une place est libre."
+    },
+    {
+      "_id": "req_reservation_create_full_to_waitlist",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "reservation-create-creneau-complet-vers-liste-attente",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/1/reservations",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 6\n}"
+      },
+      "description": "TP4 : creneau 1 est complet (15/15) -> bascule automatique, reponse {\"kind\": \"liste_attente\", ...} + Location: /listes-attente/{id}, toujours 201 (pas d'erreur)."
+    },
+    {
+      "_id": "req_reservation_create_409_quota",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "reservation-create-409-quota-atteint",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/2/reservations",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 1\n}"
+      },
+      "description": "TP4 : adherent 1 a deja atteint son quota_hebdo (2/2) sur la semaine de ce creneau -> 409 quota-atteint."
+    },
+    {
+      "_id": "req_reservations_list_cursor",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "reservations-list-curseur",
+      "method": "GET",
+      "url": "{{ _.base_url }}/reservations?limit=20",
+      "description": "TP4 J3 : historique paginee par curseur, tri cree_le,id decroissant. Suivre links.next pour la page suivante."
+    },
+    {
+      "_id": "req_liste_attente_get",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "liste-attente-get",
+      "method": "GET",
+      "url": "{{ _.base_url }}/listes-attente/1"
+    },
+    {
+      "_id": "req_creneau_etag_304",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneau-etag-if-none-match-304",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux/2",
+      "headers": [{ "name": "If-None-Match", "value": "\"REMPLACER_PAR_ETAG_RECU_SUR_LE_GET_PRECEDENT\"" }],
+      "description": "TP4 J3 : fais d'abord creneaux-get sur ce meme id pour recuperer l'ETag de la reponse, colle-le dans le header If-None-Match ici -> 304 Not Modified (corps vide)."
+    },
+    {
+      "_id": "req_creneau_etag_412",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "creneau-etag-if-match-412",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/creneaux/2",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "If-Match", "value": "\"etag-perime-0000\"" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"places_prises\": 5\n}"
+      },
+      "description": "TP4 J3 : If-Match avec un ETag perime/faux -> 412 Precondition Failed."
+    }
+  ]
+}

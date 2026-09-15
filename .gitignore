@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 *.db-journal
+.pytest_cache/
+.ruff_cache/
+fiche-revision-*.pdf
