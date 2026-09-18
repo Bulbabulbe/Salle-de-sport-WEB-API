@@ -3,6 +3,7 @@ from sqlite3 import IntegrityError
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError as PydanticValidationError
 
 BASE_ERROR_URL = "https://salle-de-sport-api.local/errors"
 
@@ -45,15 +46,6 @@ class ConflictError(ApiError):
         super().__init__(detail=detail)
 
 
-class PreconditionFailedError(ApiError):
-    status_code = 412
-    type_slug = "precondition-failed"
-    title = "Précondition non satisfaite"
-
-    def __init__(self, detail: str = "La ressource a changé depuis le dernier ETag connu."):
-        super().__init__(detail=detail)
-
-
 def _problem(status, type_slug, title, request, detail=None, errors=None):
     body = {
         "type": f"{BASE_ERROR_URL}/{type_slug}",
@@ -66,6 +58,16 @@ def _problem(status, type_slug, title, request, detail=None, errors=None):
     if errors is not None:
         body["errors"] = errors
     return JSONResponse(status_code=status, content=body, media_type="application/problem+json")
+
+
+def _field_errors(errs):
+    return [
+        {
+            "field": ".".join(str(p) for p in e["loc"] if p not in ("body", "query")) or "_",
+            "message": e["msg"].removeprefix("Value error, "),
+        }
+        for e in errs
+    ]
 
 
 def register_error_handlers(app):
@@ -84,14 +86,13 @@ def register_error_handlers(app):
                 request,
                 detail="Le corps de la requête n'est pas un JSON valide.",
             )
-        field_errors = [
-            {
-                "field": ".".join(str(p) for p in e["loc"] if p not in ("body", "query")) or "_",
-                "message": e["msg"].removeprefix("Value error, "),
-            }
-            for e in errs
-        ]
-        return _problem(422, "validation", "Requête invalide", request, errors=field_errors)
+        return _problem(422, "validation", "Requête invalide", request, errors=_field_errors(errs))
+
+    # Levée quand une route valide elle-même un modèle (ex : PATCH qui revalide l'objet fusionné) :
+    # même réponse 422 qu'un corps de requête invalide.
+    @app.exception_handler(PydanticValidationError)
+    def handle_model_validation(request: Request, exc: PydanticValidationError):
+        return _problem(422, "validation", "Requête invalide", request, errors=_field_errors(exc.errors()))
 
     @app.exception_handler(IntegrityError)
     def handle_integrity_error(request: Request, exc: IntegrityError):

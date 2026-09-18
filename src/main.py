@@ -1,12 +1,10 @@
 from urllib.parse import urlencode
 
-from fastapi import FastAPI, Header, Response
+from fastapi import FastAPI, Query, Response
 
-from .booking import create_reservation
 from .db import db, fetch_one
-from .errors import NotFoundError, PreconditionFailedError, ValidationError, register_error_handlers
-from .models import COURS_FIELDS, CRENEAU_FIELDS, Cours, CoursPatch, Creneau, CreneauPatch, ReservationIn
-from .utils import compute_etag, decode_cursor, encode_cursor
+from .errors import NotFoundError, ValidationError, register_error_handlers
+from .models import COURS_FIELDS, CRENEAU_FIELDS, Cours, CoursPatch, Creneau, CreneauPatch
 
 app = FastAPI()
 register_error_handlers(app)
@@ -65,10 +63,16 @@ def replace_cours(id: int, body: Cours):
 @app.patch("/cours/{id}")
 def update_cours(id: int, body: CoursPatch):
     with db() as conn:
-        if fetch_one(conn, "cours", id) is None:
+        current = fetch_one(conn, "cours", id)
+        if current is None:
             raise NotFoundError("cours", id)
         require_exists(conn, "coachs", body.coach_id, "coach_id")
         fields = {k: v for k, v in body.model_dump().items() if v is not None}
+        # On revalide l'objet complet (valeurs actuelles + champs reçus) : sinon un PATCH de
+        # periode_fin seule pourrait la placer avant la periode_debut déjà enregistrée.
+        cours_modifie = {f: current[f] for f in COURS_FIELDS}
+        cours_modifie.update(fields)
+        Cours(**cours_modifie)
         if fields:
             conn.execute(
                 f"UPDATE cours SET {', '.join(f + ' = ?' for f in fields)} WHERE id = ?",
@@ -97,14 +101,15 @@ def create_creneau(body: Creneau, response: Response):
         )
         conn.commit()
         new_id = cur.lastrowid
+        row = fetch_one(conn, "creneaux", new_id)
     response.headers["Location"] = f"/creneaux/{new_id}"
-    return {"id": new_id, **body.model_dump()}
+    return row
 
 
 @app.get("/creneaux")
 def list_creneaux(
-    page: int = 1,
-    limit: int = 20,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
     cours: str | None = None,
     coach: str | None = None,
     jour: int | None = None,
@@ -165,56 +170,47 @@ def list_creneaux(
 
 
 @app.get("/creneaux/{id}")
-def get_creneau(id: int, response: Response, if_none_match: str | None = Header(None)):
+def get_creneau(id: int):
     with db() as conn:
         row = fetch_one(conn, "creneaux", id)
     if row is None:
         raise NotFoundError("creneau", id)
-    etag = compute_etag(row)
-    if if_none_match == etag:
-        return Response(status_code=304, headers={"ETag": etag})
-    response.headers["ETag"] = etag
     return row
 
 
 @app.put("/creneaux/{id}")
-def replace_creneau(id: int, body: Creneau, response: Response, if_match: str | None = Header(None)):
+def replace_creneau(id: int, body: Creneau):
     with db() as conn:
-        current = fetch_one(conn, "creneaux", id)
-        if current is None:
+        if fetch_one(conn, "creneaux", id) is None:
             raise NotFoundError("creneau", id)
-        if if_match is not None and if_match != compute_etag(current):
-            raise PreconditionFailedError()
         require_exists(conn, "cours", body.cours_id, "cours_id")
         conn.execute(
             f"UPDATE creneaux SET {', '.join(f + ' = ?' for f in CRENEAU_FIELDS)} WHERE id = ?",
             [getattr(body, f) for f in CRENEAU_FIELDS] + [id],
         )
         conn.commit()
-        row = fetch_one(conn, "creneaux", id)
-    response.headers["ETag"] = compute_etag(row)
-    return row
+        return fetch_one(conn, "creneaux", id)
 
 
 @app.patch("/creneaux/{id}")
-def update_creneau(id: int, body: CreneauPatch, response: Response, if_match: str | None = Header(None)):
+def update_creneau(id: int, body: CreneauPatch):
     with db() as conn:
         current = fetch_one(conn, "creneaux", id)
         if current is None:
             raise NotFoundError("creneau", id)
-        if if_match is not None and if_match != compute_etag(current):
-            raise PreconditionFailedError()
         require_exists(conn, "cours", body.cours_id, "cours_id")
         fields = {k: v for k, v in body.model_dump().items() if v is not None}
+        # Même principe que pour les cours : un PATCH de fin seule ne doit pas la placer avant debut.
+        creneau_modifie = {f: current[f] for f in CRENEAU_FIELDS}
+        creneau_modifie.update(fields)
+        Creneau(**creneau_modifie)
         if fields:
             conn.execute(
                 f"UPDATE creneaux SET {', '.join(f + ' = ?' for f in fields)} WHERE id = ?",
                 list(fields.values()) + [id],
             )
             conn.commit()
-        row = fetch_one(conn, "creneaux", id)
-    response.headers["ETag"] = compute_etag(row)
-    return row
+        return fetch_one(conn, "creneaux", id)
 
 
 @app.delete("/creneaux/{id}", status_code=204)
@@ -224,59 +220,3 @@ def delete_creneau(id: int):
             raise NotFoundError("creneau", id)
         conn.execute("DELETE FROM creneaux WHERE id = ?", (id,))
         conn.commit()
-
-
-@app.post("/creneaux/{id}/reservations", status_code=201)
-def reserve_creneau(id: int, body: ReservationIn, response: Response):
-    with db() as conn:
-        result = create_reservation(conn, id, body.adherent_id)
-    if result["kind"] == "reservation":
-        response.headers["Location"] = f"/reservations/{result['id']}"
-    else:
-        response.headers["Location"] = f"/listes-attente/{result['id']}"
-    return result
-
-
-@app.get("/reservations")
-def list_reservations(limit: int = 20, after: str | None = None):
-    params: list = []
-    where = ""
-    if after is not None:
-        cree_le, last_id = decode_cursor(after)
-        where = "WHERE (cree_le < ? OR (cree_le = ? AND id < ?))"
-        params = [cree_le, cree_le, int(last_id)]
-
-    with db() as conn:
-        rows = [
-            dict(r)
-            for r in conn.execute(
-                f"SELECT * FROM reservations {where} ORDER BY cree_le DESC, id DESC LIMIT ?",
-                params + [limit],
-            ).fetchall()
-        ]
-
-    next_link = None
-    if len(rows) == limit:
-        last = rows[-1]
-        cursor = encode_cursor(last["cree_le"], last["id"])
-        next_link = f"/reservations?limit={limit}&after={cursor}"
-
-    return {"data": rows, "links": {"next": next_link}}
-
-
-@app.get("/reservations/{id}")
-def get_reservation(id: int):
-    with db() as conn:
-        row = fetch_one(conn, "reservations", id)
-    if row is None:
-        raise NotFoundError("reservation", id)
-    return row
-
-
-@app.get("/listes-attente/{id}")
-def get_liste_attente(id: int):
-    with db() as conn:
-        row = fetch_one(conn, "listes_attente", id)
-    if row is None:
-        raise NotFoundError("liste_attente", id)
-    return row
