@@ -1,0 +1,6 @@
+line-length = 120
+
+[lint]
+# B008 interdit un appel de fonction dans une valeur par defaut. C'est pourtant
+# la syntaxe officielle de FastAPI pour declarer une dependance : Depends(...).
+ignore = ["B008"]

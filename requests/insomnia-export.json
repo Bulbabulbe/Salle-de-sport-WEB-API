@@ -16,7 +16,9 @@
       "parentId": "wrk_gym",
       "name": "Base",
       "data": {
-        "base_url": "http://127.0.0.1:8000"
+        "base_url": "http://127.0.0.1:8000",
+        "token": "coach-token-de-demo",
+        "token_adherent": "adherent-token-de-demo"
       }
     },
     {
@@ -30,6 +32,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -43,7 +49,13 @@
       "parentId": "wrk_gym",
       "name": "cours-get",
       "method": "GET",
-      "url": "{{ _.base_url }}/cours/1"
+      "url": "{{ _.base_url }}/cours/1",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_cours_list",
@@ -51,7 +63,13 @@
       "parentId": "wrk_gym",
       "name": "cours-list",
       "method": "GET",
-      "url": "{{ _.base_url }}/cours"
+      "url": "{{ _.base_url }}/cours",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_cours_update",
@@ -64,6 +82,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -78,7 +100,13 @@
       "name": "cours-delete",
       "method": "DELETE",
       "url": "{{ _.base_url }}/cours/1",
-      "description": "Attention : l'id 1 est reference par d'autres lignes, la suppression renvoie 409."
+      "description": "Attention : l'id 1 est reference par d'autres lignes, la suppression renvoie 409.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_creneaux_create",
@@ -91,6 +119,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -104,7 +136,13 @@
       "parentId": "wrk_gym",
       "name": "creneaux-get",
       "method": "GET",
-      "url": "{{ _.base_url }}/creneaux/1"
+      "url": "{{ _.base_url }}/creneaux/1",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_creneaux_list",
@@ -112,7 +150,13 @@
       "parentId": "wrk_gym",
       "name": "creneaux-list",
       "method": "GET",
-      "url": "{{ _.base_url }}/creneaux?page=1&limit=20"
+      "url": "{{ _.base_url }}/creneaux?page=1&limit=20",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_creneaux_list_filtered",
@@ -121,7 +165,13 @@
       "name": "creneaux-list-filtered",
       "method": "GET",
       "url": "{{ _.base_url }}/creneaux?jour=2&tri=debut,id&ordre=asc&page=1&limit=10",
-      "description": "Collection navigable : pagination offset + filtre (cours/coach/jour) + tri stable."
+      "description": "Collection navigable : pagination offset + filtre (cours/coach/jour) + tri stable.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_creneaux_update",
@@ -134,6 +184,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -148,7 +202,13 @@
       "name": "creneaux-delete",
       "method": "DELETE",
       "url": "{{ _.base_url }}/creneaux/1",
-      "description": "Attention : l'id 1 est reference par d'autres lignes, la suppression renvoie 409."
+      "description": "Attention : l'id 1 est reference par d'autres lignes, la suppression renvoie 409.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_cours_get_404",
@@ -157,7 +217,13 @@
       "name": "cours-get-404",
       "method": "GET",
       "url": "{{ _.base_url }}/cours/999999",
-      "description": "TP3 J1 : ressource absente -> 404 en application/problem+json."
+      "description": "TP3 J1 : ressource absente -> 404 en application/problem+json.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
     },
     {
       "_id": "req_cours_create_422_multi",
@@ -170,6 +236,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -189,6 +259,10 @@
         {
           "name": "Content-Type",
           "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
         }
       ],
       "body": {
@@ -204,7 +278,199 @@
       "name": "cours-delete-409-conflit",
       "method": "DELETE",
       "url": "{{ _.base_url }}/cours/1",
-      "description": "TP3 : suppression d'un cours ayant des creneaux lies -> 409 (conflit d'integrite), pas 500."
+      "description": "TP3 : suppression d'un cours ayant des creneaux lies -> 409 (conflit d'integrite), pas 500.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_resa_create",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-reservation-confirmee",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/9001/reservations",
+      "description": "TP4 : creneau de demo (1 place). Lancer d'abord python -m scripts.preparer_demo. -> 201 kind=reservation.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 3\n}"
+      }
+    },
+    {
+      "_id": "req_resa_attente",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-reservation-liste-attente",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/9001/reservations",
+      "description": "TP4 : la place est prise -> 201 kind=liste_attente, Location /listes-attente/{id}.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 6\n}"
+      }
+    },
+    {
+      "_id": "req_resa_409",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-reservation-409-deja-inscrit",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/9001/reservations",
+      "description": "TP4 : rejouer la reservation de l'adherent 3 -> 409 deja-inscrit.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 3\n}"
+      }
+    },
+    {
+      "_id": "req_etag_get",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-creneau-get-etag",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux/2",
+      "description": "TP4 : noter l'en-tete ETag de la reponse, il sert aux deux requetes suivantes.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_etag_304",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-creneau-304",
+      "method": "GET",
+      "url": "{{ _.base_url }}/creneaux/2",
+      "description": "TP4 : coller l'ETag recu dans If-None-Match -> 304 sans corps.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "If-None-Match",
+          "value": "REMPLACER_PAR_L_ETAG"
+        }
+      ]
+    },
+    {
+      "_id": "req_etag_412",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp4-creneau-412",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/creneaux/2",
+      "description": "TP4 : If-Match perime -> 412 Precondition Failed.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "If-Match",
+          "value": "\"etag-perime-0000\""
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"fin\": \"2026-10-05T11:30:00Z\"\n}"
+      }
+    },
+    {
+      "_id": "req_401",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp6-sans-token-401",
+      "method": "GET",
+      "url": "{{ _.base_url }}/cours",
+      "headers": [],
+      "description": "TP6 : aucune en-tete Authorization -> 401 en problem+json."
+    },
+    {
+      "_id": "req_403_role",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp6-adherent-cree-un-cours-403",
+      "method": "POST",
+      "url": "{{ _.base_url }}/cours",
+      "description": "TP6 : token adherent sur une route reservee aux coachs -> 403.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_adherent }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"type\": \"Boxe\",\n  \"coach_id\": 1,\n  \"capacite\": 15,\n  \"jour_semaine\": 3,\n  \"heure_debut\": \"18:00\",\n  \"duree_min\": 60,\n  \"periode_debut\": \"2026-09-07\",\n  \"periode_fin\": \"2026-12-28\",\n  \"fuseau\": \"Europe/Paris\"\n}"
+      }
+    },
+    {
+      "_id": "req_403_owner",
+      "_type": "request",
+      "parentId": "wrk_gym",
+      "name": "tp6-reserver-pour-un-autre-403",
+      "method": "POST",
+      "url": "{{ _.base_url }}/creneaux/9001/reservations",
+      "description": "TP6 : un adherent (id 6) tente de reserver pour l'adherent 3 -> 403.",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token_adherent }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"adherent_id\": 3\n}"
+      }
     }
   ]
 }

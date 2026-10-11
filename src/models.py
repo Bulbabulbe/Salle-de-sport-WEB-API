@@ -97,6 +97,15 @@ class CoursPatch(BaseModel):
 COURS_FIELDS = list(Cours.model_fields.keys())
 
 
+class CoursOut(Cours):
+    """Ce que l'API renvoie pour un cours : les mêmes champs, plus l'id.
+
+    Déclaré pour que la spec OpenAPI décrive la réponse (test de contrat du TP5).
+    """
+
+    id: int
+
+
 # places_prises n'apparaît pas ici : c'est un compteur géré par le serveur (réservations),
 # le client ne doit pas pouvoir l'envoyer. Avec extra="forbid", l'envoyer donne un 422.
 class Creneau(BaseModel):
@@ -126,3 +135,9 @@ class CreneauPatch(BaseModel):
 
 
 CRENEAU_FIELDS = list(Creneau.model_fields.keys())
+
+
+class ReservationIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    adherent_id: int

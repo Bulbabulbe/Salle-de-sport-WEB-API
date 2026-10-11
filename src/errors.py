@@ -19,6 +19,33 @@ class ApiError(Exception):
         super().__init__(detail or self.title)
 
 
+class UnauthorizedError(ApiError):
+    status_code = 401
+    type_slug = "non-authentifie"
+    title = "Authentification requise"
+
+    def __init__(self, detail: str = "Token absent ou invalide : utilisez l'en-tête Authorization: Bearer <token>."):
+        super().__init__(detail=detail)
+
+
+class ForbiddenError(ApiError):
+    status_code = 403
+    type_slug = "droits-insuffisants"
+    title = "Droits insuffisants"
+
+    def __init__(self, detail: str):
+        super().__init__(detail=detail)
+
+
+class PreconditionFailedError(ApiError):
+    status_code = 412
+    type_slug = "precondition-failed"
+    title = "Précondition non satisfaite"
+
+    def __init__(self, detail: str = "La ressource a changé depuis le dernier ETag connu."):
+        super().__init__(detail=detail)
+
+
 class NotFoundError(ApiError):
     status_code = 404
     type_slug = "not-found"
