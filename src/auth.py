@@ -19,6 +19,12 @@ def utilisateur_courant(identifiants: HTTPAuthorizationCredentials | None = Depe
     token_coach = os.environ.get("TOKEN_COACH", "")
     token_adherent = os.environ.get("TOKEN_ADHERENT", "")
 
+    if not token_coach and not token_adherent:
+        raise UnauthorizedError(
+            "Aucun token configuré côté serveur : copier .env.example en .env, "
+            "puis relancer avec --env-file .env (voir README)."
+        )
+
     if token and token == token_coach:
         return {"role": "coach", "adherent_id": None}
     if token and token == token_adherent:
